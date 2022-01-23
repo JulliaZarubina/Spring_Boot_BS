@@ -1,42 +1,51 @@
 package web.controller;
 
+
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import web.model.Role;
 import web.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import web.service.RoleService;
 import web.service.UserService;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Controller
 @RequestMapping(value = "/admin")
 public class AdminController {
 
-    @Autowired
-    @Qualifier(value = "userServiceImpl")
-    private UserService userService;
+    private final UserService userService;
+    private final RoleService roleService;
 
-    @GetMapping
-    public String allUsers(Model model) {
-        List<User> allUsers = userService.allUsers();
-        model.addAttribute("allUsers",userService.allUsers());
-        return "userpage";
+    @Autowired
+    public AdminController(UserService userService, RoleService roleService) {
+        this.userService = userService;
+        this.roleService = roleService;
+    }
+
+    @GetMapping("")
+    public String getUsers(@AuthenticationPrincipal User user, Model model) {
+        model.addAttribute("user", user);
+        model.addAttribute("users", userService.allUsers());
+        model.addAttribute("roles", roleService.getAllRoles());
+        return "adminpage";
     }
 
     @GetMapping("/new")
-    public String newUser(@ModelAttribute("user") User user) {
-        return "admin/userinf";
+    public String newUser(Model model) {
+        model.addAttribute("roles", roleService.getAllRoles());
+        model.addAttribute("user", new User());
+        return "new";
     }
 
     @PostMapping
     public String newUser(@ModelAttribute("user") User user,
-                             @RequestParam(required = false, name = "ADMIN") String admin,
-                             @RequestParam(required = false, name = "USER") String USER) {
+                          @RequestParam(required = false, name = "ADMIN") String admin,
+                          @RequestParam(required = false, name = "USER") String USER) {
         Set<Role> roles = new HashSet<>();
         roles.add(new Role(2L, USER));
         if (admin != null) {
@@ -49,8 +58,8 @@ public class AdminController {
 
     @PatchMapping("/{id}")
     public String update(@ModelAttribute("user") User user,
-                             @RequestParam(required = false, name = "ADMIN") String admin,
-                             @RequestParam(required = false, name = "USER") String USER) {
+                         @RequestParam(required = false, name = "ADMIN") String admin,
+                         @RequestParam(required = false, name = "USER") String USER) {
         Set<Role> roles = new HashSet<>();
         roles.add(new Role(2L, USER));
         if (admin != null) {

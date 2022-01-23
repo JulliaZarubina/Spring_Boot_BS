@@ -8,20 +8,24 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import web.service.RoleService;
 import web.service.UserService;
 
 @Controller
-@RequestMapping(value = "/users")
+@RequestMapping(value = "/")
 public class UserController {
 
     @Autowired
     @Qualifier(value = "userServiceImpl")
     private UserService userService;
 
-    @GetMapping
+
+    @GetMapping("user")
     public String getInfo(@AuthenticationPrincipal User user, Model model) {
         model.addAttribute("user", user);
         model.addAttribute("roles", user.getRoles());
-        return "userpage";
+        return "userinf";
     }
+
+
 }
